@@ -1,4 +1,4 @@
-use keyboard::Key;
+use crossterm::KeyEvent;
 use keymap::{KeyMap, KeyMapState, CommandInfo};
 use command::{BuilderEvent, BuilderArgs };
 use textobject::{ Offset, Kind, Anchor };
@@ -33,7 +33,7 @@ impl NormalMode {
         // movement
         // { keys: 'h', command: 'buffer::move_cursor', args: { direction: backward, kind: char, number: 1 } }
         keymap.bind_key(
-            Key::Char('h'),
+            KeyEvent::Char('h'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -41,7 +41,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('j'),
+            KeyEvent::Char('j'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -49,7 +49,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('k'),
+            KeyEvent::Char('k'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -57,7 +57,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('l'),
+            KeyEvent::Char('l'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -65,7 +65,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('w'),
+            KeyEvent::Char('w'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Word(Anchor::Start))
@@ -73,7 +73,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('b'),
+            KeyEvent::Char('b'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Word(Anchor::Start))
@@ -81,7 +81,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('$'),
+            KeyEvent::Char('$'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::End))
@@ -89,7 +89,7 @@ impl NormalMode {
             }
         );
         keymap.bind_key(
-            Key::Char('0'),
+            KeyEvent::Char('0'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Start))
@@ -99,14 +99,14 @@ impl NormalMode {
 
         // actions
         keymap.bind_key(
-            Key::Char('u'),
+            KeyEvent::Char('u'),
             CommandInfo {
                 command_name: String::from("editor::undo"),
                 args: None,
             }
         );
         keymap.bind_key(
-            Key::Ctrl('r'),
+            KeyEvent::Ctrl('r'),
             CommandInfo {
                 command_name: String::from("editor::redo"),
                 args: None,
@@ -114,14 +114,14 @@ impl NormalMode {
         );
 
         keymap.bind_key(
-            Key::Char('i'),
+            KeyEvent::Char('i'),
             CommandInfo {
                 command_name: String::from("editor::set_mode"),
                 args: Some(BuilderArgs::new().with_mode(ModeType::Insert)),
             }
         );
         keymap.bind_key(
-            Key::Char(':'),
+            KeyEvent::Char(':'),
             CommandInfo {
                 command_name: String::from("editor::set_overlay"),
                 args: Some(BuilderArgs::new().with_overlay(OverlayType::CommandPrompt)),
@@ -134,8 +134,8 @@ impl NormalMode {
 }
 
 impl Mode for NormalMode {
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent {
-        if let Key::Char(c) = key {
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent {
+        if let KeyEvent::Char(c) = key {
             // '0' might be bound (start of line), and cannot be the start of a number sequence
             if c.is_digit(10) && (self.reading_number || c != '0') {
                 let n = c.to_digit(10).unwrap() as i32;

@@ -1,4 +1,4 @@
-use keyboard::Key;
+use crossterm::KeyEvent;
 use command::BuilderEvent;
 
 pub use self::standard::StandardMode;
@@ -23,5 +23,5 @@ pub enum ModeType {
 /// commands which the Editor will interpret.
 pub trait Mode {
     /// Given a Key, return a Command wrapped in a BuilderEvent for the Editor to interpret
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent;
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent;
 }

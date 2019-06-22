@@ -137,7 +137,7 @@ dependencies = [
 [[package]]
 name = "crossterm"
 version = "0.9.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/asmoaesl/crossterm#7ba2a12fb2daee30437bdd271ddca5b23cf7dee2"
 dependencies = [
  "crossterm_cursor 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossterm_input 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -288,7 +288,7 @@ name = "iota-editor"
 version = "0.1.0"
 dependencies = [
  "clippy 0.0.210 (registry+https://github.com/rust-lang/crates.io-index)",
- "crossterm 0.9.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm 0.9.6 (git+https://github.com/asmoaesl/crossterm)",
  "gapbuffer 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -749,7 +749,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5067f5bb2d80ef5d68b4c87db81601f0b75bca627bc2ef76b141d7b846a3c6d9"
 "checksum clippy 0.0.210 (registry+https://github.com/rust-lang/crates.io-index)" = "e6c150cce041d9dcf1c4fc5411a7fd9dad93f9794d4d06146227da246dd5e957"
 "checksum clippy_lints 0.0.210 (registry+https://github.com/rust-lang/crates.io-index)" = "0bd54a545b1651a3de1235cb5f7d811192fbbe3c3e34254cc7c56887c4015d8d"
-"checksum crossterm 0.9.6 (registry+https://github.com/rust-lang/crates.io-index)" = "21ac79357981b3c35917a377e6138729b66316db7649f9f96fbb517bb02361e5"
+"checksum crossterm 0.9.6 (git+https://github.com/asmoaesl/crossterm)" = "<none>"
 "checksum crossterm_cursor 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "4b8ddb43937bfafbe07d349ee9497754ceac818ee872116afccb076f2de28d3d"
 "checksum crossterm_input 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "a23a71b51ddc8f74e13e341179b1a26b20f0030d14ff8fbdd9da45fd0e342bc5"
 "checksum crossterm_screen 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "90889b9f1d7867a583dede34deab1e32a10379e9eb70d920ca7895e144aa6d65"

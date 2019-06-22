@@ -4,11 +4,10 @@ use std::convert::TryInto;
 
 use unicode_width::UnicodeWidthStr;
 // use rustbox::{Style, Color, RustBox};
-use crossterm::{color, TerminalCursor, Attribute, Color, Colored, Colorize, Styler, Crossterm};
+use crossterm::{KeyEvent, TerminalCursor, Attribute, Color, Colored, Colorize, Styler, Crossterm};
 
 use editor::ALL_COMMANDS;
 use command::BuilderEvent;
-use keyboard::Key;
 use keymap::CommandInfo;
 
 
@@ -20,7 +19,7 @@ pub enum OverlayType {
 pub trait Overlay {
     fn draw(&self, rb: &mut Crossterm);
     fn draw_cursor(&mut self, rb: &mut Crossterm);
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent;
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent;
 }
 
 pub struct CommandPrompt {
@@ -147,38 +146,38 @@ impl Overlay for CommandPrompt {
         let prefix_len = UnicodeWidthStr::width(self.prefix.as_str());
         let data_len = UnicodeWidthStr::width(self.data.as_str());
         let cursor_x = prefix_len + data_len;
-        rb.cursor().goto(cursor_x as u16, height);
+        rb.cursor().goto(cursor_x as u16, height).unwrap();
     }
 
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent {
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent {
         match key {
-            Key::Esc => {
+            KeyEvent::Esc => {
                 let command_info = CommandInfo {
                     command_name: String::from("editor::noop"),
                     args: None,
                 };
                 return BuilderEvent::Complete(command_info);
             }
-            Key::Backspace => { self.data.pop(); },
-            Key::Enter => {
+            KeyEvent::Backspace => { self.data.pop(); },
+            KeyEvent::Char('\n') => { // Enter
                 let command_info = CommandInfo {
                     command_name: self.data.clone(),
                     args: None,
                 };
                 return BuilderEvent::Complete(command_info);
             }
-            Key::Up => {
+            KeyEvent::Up => {
                 let max = self.get_filtered_command_names().len();
                 if self.selected_index < max {
                     self.selected_index += 1;
                 }
             }
-            Key::Down => {
+            KeyEvent::Down => {
                 if self.selected_index > 0 {
                     self.selected_index -= 1;
                 }
             }
-            Key::Tab => {
+            KeyEvent::Char('\t') => { // Tab
                 if self.selected_index > 0 {
                     let command = {
                         let mut keys: Vec<&&str> = ALL_COMMANDS
@@ -193,7 +192,7 @@ impl Overlay for CommandPrompt {
                     self.data = command.to_string();
                 }
             }
-            Key::Char(c) => { self.data.push(c) },
+            KeyEvent::Char(c) => { self.data.push(c) },
             _ => {}
         }
         BuilderEvent::Incomplete

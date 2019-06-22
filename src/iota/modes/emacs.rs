@@ -1,4 +1,4 @@
-use keyboard::Key;
+use crossterm::KeyEvent;
 use keymap::{KeyMap, KeyMapState, CommandInfo};
 use command::{BuilderEvent, BuilderArgs };
 use textobject::{Offset, Anchor, Kind};
@@ -30,14 +30,14 @@ impl EmacsMode {
 
         // Editor Commands
         keymap.bind_keys(
-            &[Key::Ctrl('x'), Key::Ctrl('c')],
+            &[KeyEvent::Ctrl('x'), KeyEvent::Ctrl('c')],
             CommandInfo {
                 command_name: String::from("editor::quit"),
                 args: None,
             }
         );
         keymap.bind_keys(
-            &[Key::Ctrl('x'), Key::Ctrl('s')],
+            &[KeyEvent::Ctrl('x'), KeyEvent::Ctrl('s')],
             CommandInfo {
                 command_name: String::from("editor::save_buffer"),
                 args: None,
@@ -46,7 +46,7 @@ impl EmacsMode {
 
         // Cursor movement
         keymap.bind_key(
-            Key::Up,
+            KeyEvent::Up,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -54,39 +54,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Down,
-            CommandInfo {
-                command_name: String::from("buffer::move_cursor"),
-                args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
-                                             .with_offset(Offset::Forward(1, Mark::Cursor(0))))
-            }
-        );
-        keymap.bind_key(
-            Key::Left,
-            CommandInfo {
-                command_name: String::from("buffer::move_cursor"),
-                args: Some(BuilderArgs::new().with_kind(Kind::Char)
-                                             .with_offset(Offset::Backward(1, Mark::Cursor(0))))
-            }
-        );
-        keymap.bind_key(
-            Key::Right,
-            CommandInfo {
-                command_name: String::from("buffer::move_cursor"),
-                args: Some(BuilderArgs::new().with_kind(Kind::Char)
-                                             .with_offset(Offset::Forward(1, Mark::Cursor(0))))
-            }
-        );
-        keymap.bind_key(
-            Key::Ctrl('p'),
-            CommandInfo {
-                command_name: String::from("buffer::move_cursor"),
-                args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
-                                             .with_offset(Offset::Backward(1, Mark::Cursor(0))))
-            }
-        );
-        keymap.bind_key(
-            Key::Ctrl('n'),
+            KeyEvent::Down,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -94,7 +62,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Ctrl('b'),
+            KeyEvent::Left,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -102,7 +70,39 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Ctrl('f'),
+            KeyEvent::Right,
+            CommandInfo {
+                command_name: String::from("buffer::move_cursor"),
+                args: Some(BuilderArgs::new().with_kind(Kind::Char)
+                                             .with_offset(Offset::Forward(1, Mark::Cursor(0))))
+            }
+        );
+        keymap.bind_key(
+            KeyEvent::Ctrl('p'),
+            CommandInfo {
+                command_name: String::from("buffer::move_cursor"),
+                args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
+                                             .with_offset(Offset::Backward(1, Mark::Cursor(0))))
+            }
+        );
+        keymap.bind_key(
+            KeyEvent::Ctrl('n'),
+            CommandInfo {
+                command_name: String::from("buffer::move_cursor"),
+                args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
+                                             .with_offset(Offset::Forward(1, Mark::Cursor(0))))
+            }
+        );
+        keymap.bind_key(
+            KeyEvent::Ctrl('b'),
+            CommandInfo {
+                command_name: String::from("buffer::move_cursor"),
+                args: Some(BuilderArgs::new().with_kind(Kind::Char)
+                                             .with_offset(Offset::Backward(1, Mark::Cursor(0))))
+            }
+        );
+        keymap.bind_key(
+            KeyEvent::Ctrl('f'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -111,7 +111,7 @@ impl EmacsMode {
         );
 
         keymap.bind_key(
-            Key::Ctrl('e'),
+            KeyEvent::Ctrl('e'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::End))
@@ -119,7 +119,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Ctrl('a'),
+            KeyEvent::Ctrl('a'),
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::End))
@@ -129,21 +129,21 @@ impl EmacsMode {
 
         // Editing
         keymap.bind_key(
-            Key::Tab,
+            KeyEvent::Char('\t'),
             CommandInfo {
                 command_name: String::from("buffer::insert_tab"),
                 args: None,
             }
         );
         keymap.bind_key(
-            Key::Enter,
+            KeyEvent::Char('\n'),
             CommandInfo {
                 command_name: String::from("buffer::insert_char"),
                 args: Some(BuilderArgs::new().with_char_arg('\n')),
             }
         );
         keymap.bind_key(
-            Key::Backspace,
+            KeyEvent::Backspace,
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -151,7 +151,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Delete,
+            KeyEvent::Delete,
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -159,7 +159,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Ctrl('h'),
+            KeyEvent::Ctrl('h'),
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -167,7 +167,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_key(
-            Key::Ctrl('d'),
+            KeyEvent::Ctrl('d'),
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -175,7 +175,7 @@ impl EmacsMode {
             }
         );
         keymap.bind_keys(
-            &[Key::Ctrl('x'), Key::Ctrl('f')],
+            &[KeyEvent::Ctrl('x'), KeyEvent::Ctrl('f')],
             CommandInfo {
                 command_name: String::from("editor::find_file"),
                 args: None,
@@ -201,7 +201,7 @@ impl EmacsMode {
     ///   for non-prefixed keys to be used in keybindings. ie: C-x s rather
     ///   than C-x C-s.
     /// - If there is no match of any kind, return Incomplete
-    fn check_key(&mut self, key: Key) -> BuilderEvent {
+    fn check_key(&mut self, key: KeyEvent) -> BuilderEvent {
         match self.keymap.check_key(key) {
             KeyMapState::Match(c) => {
                 self.match_in_progress = false;
@@ -223,12 +223,12 @@ impl EmacsMode {
 impl Mode for EmacsMode {
     /// Given a key, pass it through the EmacsMode KeyMap and return the associated Command, if any.
     /// If no match is found, treat it as an InsertChar command.
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent {
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent {
         if self.match_in_progress {
             return self.check_key(key)
         }
 
-        if let Key::Char(c) = key {
+        if let KeyEvent::Char(c) = key {
             let mut builder_args = BuilderArgs::new().with_char_arg(c);
             let command_info = CommandInfo {
                 command_name: String::from("buffer::insert_char"),

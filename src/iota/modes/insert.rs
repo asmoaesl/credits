@@ -1,4 +1,4 @@
-use keyboard::Key;
+use crossterm::KeyEvent;
 use keymap::{KeyMap, KeyMapState, CommandInfo};
 use command::{BuilderEvent, BuilderArgs };
 use textobject::{ Offset, Kind, Anchor };
@@ -26,7 +26,7 @@ impl InsertMode {
         let mut keymap = KeyMap::new();
 
         keymap.bind_key(
-            Key::Esc,
+            KeyEvent::Esc,
             CommandInfo {
                 command_name: String::from("editor::set_mode"),
                 args: Some(BuilderArgs::new().with_mode(ModeType::Normal))
@@ -34,7 +34,7 @@ impl InsertMode {
         );
         // Cursor movement
         keymap.bind_key(
-            Key::Up,
+            KeyEvent::Up,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -42,7 +42,7 @@ impl InsertMode {
             }
         );
         keymap.bind_key(
-            Key::Down,
+            KeyEvent::Down,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -50,7 +50,7 @@ impl InsertMode {
             }
         );
         keymap.bind_key(
-            Key::Left,
+            KeyEvent::Left,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -58,7 +58,7 @@ impl InsertMode {
             }
         );
         keymap.bind_key(
-            Key::Right,
+            KeyEvent::Right,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -66,21 +66,21 @@ impl InsertMode {
             }
         );
         keymap.bind_key(
-            Key::Tab,
+            KeyEvent::Char('\t'),
             CommandInfo {
                 command_name: String::from("buffer::insert_tab"),
                 args: None,
             }
         );
         keymap.bind_key(
-            Key::Enter,
+            KeyEvent::Char('\n'),
             CommandInfo {
                 command_name: String::from("buffer::insert_char"),
                 args: Some(BuilderArgs::new().with_char_arg('\n')),
             }
         );
         keymap.bind_key(
-            Key::Backspace,
+            KeyEvent::Backspace,
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -88,7 +88,7 @@ impl InsertMode {
             }
         );
         keymap.bind_key(
-            Key::Delete,
+            KeyEvent::Delete,
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -103,8 +103,8 @@ impl InsertMode {
 }
 
 impl Mode for InsertMode {
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent {
-        if let Key::Char(c) = key {
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent {
+        if let KeyEvent::Char(c) = key {
             let builder_args = BuilderArgs::new().with_char_arg(c);
             let command_info = CommandInfo {
                 command_name: String::from("buffer::insert_char"),

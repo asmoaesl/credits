@@ -1,4 +1,4 @@
-use keyboard::Key;
+use crossterm::KeyEvent;
 use keymap::{KeyMap, KeyMapState, CommandInfo};
 use command::{BuilderEvent, BuilderArgs };
 use buffer::Mark;
@@ -37,14 +37,14 @@ impl StandardMode {
 
         // Editor Commands
         keymap.bind_key(
-            Key::Ctrl('q'),
+            KeyEvent::Ctrl('q'),
             CommandInfo {
                 command_name: String::from("editor::quit"),
                 args: None,
             }
         );
         keymap.bind_key(
-            Key::Ctrl('s'),
+            KeyEvent::Ctrl('s'),
             CommandInfo {
                 command_name: String::from("editor::save_buffer"),
                 args: None,
@@ -53,7 +53,7 @@ impl StandardMode {
 
         // Cursor movement
         keymap.bind_key(
-            Key::Up,
+            KeyEvent::Up,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -61,7 +61,7 @@ impl StandardMode {
             }
         );
         keymap.bind_key(
-            Key::Down,
+            KeyEvent::Down,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::Same))
@@ -69,7 +69,7 @@ impl StandardMode {
             }
         );
         keymap.bind_key(
-            Key::Left,
+            KeyEvent::Left,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -77,7 +77,7 @@ impl StandardMode {
             }
         );
         keymap.bind_key(
-            Key::Right,
+            KeyEvent::Right,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -86,7 +86,7 @@ impl StandardMode {
         );
 
         keymap.bind_key(
-            Key::CtrlRight,
+            KeyEvent::CtrlRight,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Word(Anchor::Start))
@@ -94,7 +94,7 @@ impl StandardMode {
             }
         );
         keymap.bind_key(
-            Key::CtrlLeft,
+            KeyEvent::CtrlLeft,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Word(Anchor::Start))
@@ -103,7 +103,7 @@ impl StandardMode {
         );
     
         keymap.bind_key(
-            Key::End,
+            KeyEvent::End,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::End))
@@ -111,7 +111,7 @@ impl StandardMode {
             }
         );
         keymap.bind_key(
-            Key::Home,
+            KeyEvent::Home,
             CommandInfo {
                 command_name: String::from("buffer::move_cursor"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Line(Anchor::End))
@@ -121,21 +121,21 @@ impl StandardMode {
 
         // Editing
         keymap.bind_key(
-            Key::Tab,
+            KeyEvent::Char('\t'),
             CommandInfo {
                 command_name: String::from("buffer::insert_tab"),
                 args: None,
             }
         );
         keymap.bind_key(
-            Key::Enter,
+            KeyEvent::Char('\n'),
             CommandInfo {
                 command_name: String::from("buffer::insert_char"),
                 args: Some(BuilderArgs::new().with_char_arg('\n')),
             }
         );
         keymap.bind_key(
-            Key::Backspace,
+            KeyEvent::Backspace,
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -143,7 +143,7 @@ impl StandardMode {
             }
         );
         keymap.bind_key(
-            Key::Delete,
+            KeyEvent::Delete,
             CommandInfo {
                 command_name: String::from("buffer::delete_char"),
                 args: Some(BuilderArgs::new().with_kind(Kind::Char)
@@ -153,14 +153,14 @@ impl StandardMode {
 
         // History
         keymap.bind_key(
-            Key::Ctrl('z'),
+            KeyEvent::Ctrl('z'),
             CommandInfo {
                 command_name: String::from("editor::undo"),
                 args: None,
             }
         );
         keymap.bind_key(
-            Key::Ctrl('r'),
+            KeyEvent::Ctrl('r'),
             CommandInfo {
                 command_name: String::from("editor::redo"),
                 args: None,
@@ -179,7 +179,7 @@ impl StandardMode {
     ///   for non-prefixed keys to be used in keybindings. ie: C-x s rather
     ///   than C-x C-s.
     /// - If there is no match of any kind, return Incomplete
-    fn check_key(&mut self, key: Key) -> BuilderEvent {
+    fn check_key(&mut self, key: KeyEvent) -> BuilderEvent {
         match self.keymap.check_key(key) {
             KeyMapState::Match(c) => {
                 self.match_in_progress = false;
@@ -201,12 +201,12 @@ impl StandardMode {
 impl Mode for StandardMode {
     /// Given a key, pass it through the StandardMode KeyMap and return the associated Command, if any.
     /// If no match is found, treat it as an InsertChar command.
-    fn handle_key_event(&mut self, key: Key) -> BuilderEvent {
+    fn handle_key_event(&mut self, key: KeyEvent) -> BuilderEvent {
         if self.match_in_progress {
             return self.check_key(key)
         }
 
-        if let Key::Char(c) = key {
+        if let KeyEvent::Char(c) = key {
             let command_info = CommandInfo {
                 command_name: String::from("buffer::insert_char"),
                 args: Some(BuilderArgs::new().with_char_arg(c)),

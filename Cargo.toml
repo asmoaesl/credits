@@ -10,7 +10,8 @@ readme = "README.md"
 authors = ["Greg Chapple <gregchapple1@gmail.com>", "Luke I. Wilson <asmoaesl@gmail.com>"]
 
 [dependencies]
-crossterm = "0.9.6"
+crossterm = { git = "https://github.com/asmoaesl/crossterm" } # temporarily, until my push gets merged
+# crossterm = "0.9.6"
 structopt = "0.2.16"
 rustc-serialize = "0.3.14"
 gapbuffer = "0.1.1"

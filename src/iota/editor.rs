@@ -8,7 +8,6 @@ use std::collections::HashMap;
 use crossterm::{InputEvent, KeyEvent, RawScreen, Crossterm};
 
 use input::Input;
-use keyboard::Key;
 use view::View;
 use modes::{Mode, ModeType, InsertMode, NormalMode};
 use buffer::Buffer;
@@ -104,16 +103,9 @@ impl<'e> Editor<'e> {
     /// If there is no active Overlay, the key event is sent to the current
     /// Mode, which returns a Command which we dispatch to handle_command.
     fn handle_key_event(&mut self, event: KeyEvent) {
-        let key = Key::from_event(&mut self.rb, event);
- 
-        let key = match key {
-            Some(k) => k,
-            None => return
-        };
-
         let command = match self.view.overlay {
-            None                  => self.mode.handle_key_event(key),
-            Some(ref mut overlay) => overlay.handle_key_event(key),
+            None                  => self.mode.handle_key_event(event),
+            Some(ref mut overlay) => overlay.handle_key_event(event),
         };
 
         if let BuilderEvent::Complete(c) = command {
@@ -149,6 +141,7 @@ impl<'e> Editor<'e> {
 
     /// Handle the given command, performing the associated action
     fn handle_command(&mut self, command: Command) {
+        eprintln!("hcmd");
         let repeat = if command.number > 0 {
             command.number
         } else { 1 };

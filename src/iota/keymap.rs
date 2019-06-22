@@ -2,25 +2,25 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 
 use command::BuilderArgs;
-use keyboard::Key;
+use crossterm::KeyEvent;
 
 
 pub enum Trie {
     Leaf(CommandInfo),
-    Node(HashMap<Key, Trie>)
+    Node(HashMap<KeyEvent, Trie>)
 }
 
 impl Trie {
     fn new() -> Trie {
         Trie::Node(HashMap::new())
     }
-    fn lookup_key(&self, key: Key) -> Option<&Trie> {
+    fn lookup_key(&self, key: KeyEvent) -> Option<&Trie> {
         match *self {
             Trie::Leaf(_) => None,
             Trie::Node(ref map) => map.get(&key)
         }
     }
-    fn lookup_keys(&self, keys: &[Key]) -> Option<&Trie> {
+    fn lookup_keys(&self, keys: &[KeyEvent]) -> Option<&Trie> {
         let mut current = self;
 
         for key in keys.iter() {
@@ -36,7 +36,7 @@ impl Trie {
 
         Some(&(*current))
     }
-    fn bind_key(&mut self, key: Key, value: CommandInfo) {
+    fn bind_key(&mut self, key: KeyEvent, value: CommandInfo) {
         match *self {
             Trie::Leaf(_) => {
                 *self = Trie::new();
@@ -47,7 +47,7 @@ impl Trie {
             }
         }
     }
-    fn bind_keys(&mut self, keys: &[Key], value: CommandInfo) {
+    fn bind_keys(&mut self, keys: &[KeyEvent], value: CommandInfo) {
         if keys.len() == 1 {
             self.bind_key(keys[0], value);
         } else if keys.len() > 1 {
@@ -84,7 +84,7 @@ pub enum KeyMapState {
 pub struct KeyMap {
     root: Trie,
     state: KeyMapState,
-    path: Vec<Key>
+    path: Vec<KeyEvent>
 }
 
 impl KeyMap {
@@ -97,7 +97,7 @@ impl KeyMap {
     }
 
     /// Eat one keypress, return the new state
-    pub fn check_key(&mut self, key: Key) -> KeyMapState {
+    pub fn check_key(&mut self, key: KeyEvent) -> KeyMapState {
         self.path.push(key);
         self.state = match self.root.lookup_keys(&*self.path) {
             Some(n) => {
@@ -126,12 +126,12 @@ impl KeyMap {
     }
 
     /// Insert or overwrite a key-sequence binding
-    pub fn bind_keys(&mut self, keys: &[Key], value: CommandInfo) {
+    pub fn bind_keys(&mut self, keys: &[KeyEvent], value: CommandInfo) {
         self.root.bind_keys(&*keys, value);
     }
 
     /// Insert or overwrite a key binding
-    pub fn bind_key(&mut self, key: Key, value: CommandInfo) {
+    pub fn bind_key(&mut self, key: KeyEvent, value: CommandInfo) {
         self.root.bind_key(key, value);
     }
 
@@ -146,7 +146,7 @@ impl KeyMap {
 }
 
 pub struct KeyBinding {
-    pub keys: Vec<Key>,
+    pub keys: Vec<KeyEvent>,
     pub command_info: CommandInfo,
 }
 
