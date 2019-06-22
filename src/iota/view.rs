@@ -24,12 +24,11 @@ use textobject::{Anchor, TextObject, Kind, Offset};
 // FIXME: Temporary replacement for the RustBox method `print_char` and this source's reliance on it.
 // Such that: rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
 macro_rules! print_char {
-    ($col:expr, $row:expr, $ch:expr) => {
+    ($dst:expr, $col:expr, $row:expr, $ch:expr) => {
         let cursor = TerminalCursor::new();
+        cursor.hide().unwrap();
         cursor.goto($col, $row).unwrap();
-        let stdout = std::io::stdout();
-        let mut handle = stdout.lock();
-        write!(handle, "{}{}", $ch, Attribute::Reset).unwrap();
+        write!($dst, "{}{}", $ch, Attribute::Reset).unwrap();
         // crossterm::terminal().write($ch).unwrap();
         // crossterm::terminal().write(Attribute::Reset).unwrap(); // Clear color and style settings
     };
@@ -191,26 +190,28 @@ impl<'v> View<'v> {
         let width = self.get_width();
         let height = self.get_height() - 1;
 
+        let stdout = std::io::stdout();
+        let mut out = stdout.lock();
 
         for index in 0..width {
             let ch: String = if index < status_text_len.try_into().unwrap() {
                 (status_text[index as usize] as char).to_string()
             } else { " ".to_owned() };
             // rb.print_char(index, height, RustBoxStyle::empty(), Color::Black, Color::Byte(19), ch);
-            print_char!(index.try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), ch)); // Index 19 of 256 colors
+            print_char!(out, index.try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), ch)); // Index 19 of 256 colors
         }
 
         if buffer.dirty {
             let data = ['[', '*', ']'];
             for (idx, ch) in data.iter().enumerate() {
                 // rb.print_char(status_text_len + idx + 1, height, RustBoxStyle::empty(), Color::Black, Color::Red, *ch);
-                print_char!((status_text_len + idx + 1).try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Red), ch));
+                print_char!(out, (status_text_len + idx + 1).try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Red), ch));
             }
         }
         if let Some((ref message, _time)) = self.message {
             for (offset, ch) in message.chars().enumerate() {
                 // rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
-                print_char!(offset.try_into().unwrap(), (height + 1).try_into().unwrap(), ch);
+                print_char!(out, offset.try_into().unwrap(), (height + 1).try_into().unwrap(), ch);
             }
         }
     }
@@ -273,7 +274,7 @@ impl<'v> View<'v> {
             //left-right shifting
             self.left_col = match cursor.0 as u16 - self.left_col {
                 x_offset if x_offset < self.threshold => {
-                    cmp::max(0, self.left_col - (self.threshold - x_offset))
+                    cmp::max(0isize, self.left_col as isize - (self.threshold - x_offset) as isize) as u16
                 }
                 x_offset if x_offset >= width => {
                     self.left_col + (x_offset - width + 1)
@@ -426,6 +427,9 @@ pub fn draw_line(rb: &mut Crossterm, line: &[u8], idx: u16, left: u16) {
     let width = rb.terminal().terminal_size().0 - 1;
     let mut x: u16 = 0;
 
+    let stdout = std::io::stdout();
+    let mut out = stdout.lock();
+
     for ch in line.iter().skip(left as usize) {
         let ch = *ch as char;
         match ch {
@@ -433,14 +437,14 @@ pub fn draw_line(rb: &mut Crossterm, line: &[u8], idx: u16, left: u16) {
                 let w = 4 - x % 4;
                 for _ in 0..w {
                     // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
-                    print_char!(x, idx, ' ');
+                    print_char!(out, x, idx, ' ');
                     x += 1;
                 }
             }
             '\n' => {}
             _ => {
                 // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ch);
-                print_char!(x, idx, ch);
+                print_char!(out, x, idx, ch);
                 x += UnicodeWidthChar::width(ch).unwrap_or(1) as u16;
             }
         }
@@ -452,14 +456,14 @@ pub fn draw_line(rb: &mut Crossterm, line: &[u8], idx: u16, left: u16) {
     // Replace any cells after end of line with ' '
     while x < width {
         // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
-        print_char!(x, idx, ' ');
+        print_char!(out, x, idx, ' ');
         x += 1;
     }
 
     // If the line is too long to fit on the screen, show an indicator
     let indicator = if line.len() > (width + left) as usize { '→' } else { ' ' };
     // rb.print_char(width, idx, RustBoxStyle::empty(), Color::White, Color::Black, indicator);
-    print_char!(width, idx, indicator);
+    print_char!(out, width, idx, indicator);
 }
 
 #[cfg(test)]
