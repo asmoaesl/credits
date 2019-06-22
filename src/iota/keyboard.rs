@@ -1,7 +1,8 @@
 use std::char;
 use std::time::Duration;
 
-use rustbox::{RustBox, Event};
+// use rustbox::{RustBox, Event};
+use crossterm::{InputEvent, KeyEvent, Crossterm};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Key {
@@ -58,8 +59,8 @@ impl Key {
         }
     }
 
-    pub fn from_chord(rb: &mut RustBox, start: u16) -> Option<Key> {
-        let chord = Key::get_chord(rb, start);
+    fn from_chord(rb: &mut Crossterm, start: u16) -> Option<Key> {
+        let chord = Self::get_chord(rb, start);
 
         match chord.as_str() {
             "\x1b[1;5C" => Some(Key::CtrlRight),
@@ -68,26 +69,28 @@ impl Key {
         }
     }
 
-    pub fn get_chord(rb: &mut RustBox, start: u16) -> String {
-            // Copy any data waiting to a string
-            // There may be a cleaner way to do this?
-            let mut chord = char::from_u32(u32::from(start)).unwrap().to_string();
-            while let Ok(Event::KeyEventRaw(_, _, ch)) = rb.peek_event(Duration::from_secs(0), true) {
-                chord.push(char::from_u32(ch).unwrap())
-            }
+    fn get_chord(rb: &mut Crossterm, start: u16) -> String {
+        // Copy any data waiting to a string
+        // There may be a cleaner way to do this?
+        let mut chord = char::from_u32(u32::from(start)).unwrap().to_string();
+        
+        while let Some(InputEvent::Keyboard(KeyEvent::Char(ch))) = rb.input().read_sync().peekable().peek() {
+            chord.push(*ch);
+        }
 
-            chord
+        chord
     }
     
-    pub fn from_event(rb: &mut RustBox, event: Event) -> Option<Key> {
+    pub fn from_event(rb: &mut Crossterm, event: KeyEvent) -> Option<Key> {
         match event {
-            Event::KeyEventRaw(_, k, ch) => {
-                match k {
-                    0 => char::from_u32(ch).map(Key::Char),
-                    0x1b => Key::from_chord(rb, 0x1b),
-                    a => Key::from_special_code(a)
-                }
-            },
+            // Event::KeyEventRaw(_, k, ch) => {
+            //     match k {
+            //         0 => char::from_u32(ch).map(Key::Char),
+            //         0x1b => Key::from_chord(rb, 0x1b),
+            //         a => Key::from_special_code(a)
+            //     }
+            // },
+            // TODO: this entire source file may need to be rewritten for crossterm
             _ => None
         }
     }

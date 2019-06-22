@@ -1,4 +1,7 @@
+// For a list of 256 terminal colors: https://jonasjacek.github.io/colors/
+
 use std::cmp;
+use std::convert::TryInto;
 use std::borrow::Cow;
 use std::path::Path;
 use std::path::PathBuf;
@@ -6,7 +9,9 @@ use std::io::Write;
 use std::fs::{File, rename};
 use std::sync::{Mutex, Arc};
 use std::time::SystemTime;
-use rustbox::{Color, RustBox, Style as RustBoxStyle};
+
+// use rustbox::{Color, RustBox, Style as RustBoxStyle};
+use crossterm::{Color, Colorize, Colored, Styler, Attribute, Crossterm};
 
 use tempdir::TempDir;
 use unicode_width::UnicodeWidthChar;
@@ -16,6 +21,15 @@ use overlay::{CommandPrompt, Overlay, OverlayType};
 use utils;
 use textobject::{Anchor, TextObject, Kind, Offset};
 
+// FIXME: Temporary replacement for the RustBox method `print_char` and this source's reliance on it.
+// Such that: rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
+macro_rules! print_char {
+    ($col:expr, $row:expr, $ch:expr) => {
+        crossterm::cursor().goto($col, $row).unwrap();
+        crossterm::terminal().write($ch).unwrap();
+        crossterm::terminal().write(Attribute::Reset).unwrap(); // Clear color and style settings
+    };
+}
 
 /// A View is an abstract Window (into a Buffer).
 ///
@@ -28,21 +42,21 @@ pub struct View<'v> {
     pub last_buffer: Option<Arc<Mutex<Buffer>>>,
     pub overlay: Option<Box<Overlay + 'v>>,
 
-    height: usize,
-    width: usize,
+    height: u16,
+    width: u16,
 
     /// First character of the top line to be displayed
     top_line: Mark,
 
     /// Index into the top_line - used for horizontal scrolling
-    left_col: usize,
+    left_col: u16,
 
     /// The current View's cursor - a reference into the Buffer
     cursor: Mark,
 
     /// Number of lines from the top/bottom of the View after which vertical
     /// scrolling begins.
-    threshold: usize,
+    threshold: u16,
 
     /// Message to be displayed in the status bar along with the time it
     /// was displayed.
@@ -51,7 +65,7 @@ pub struct View<'v> {
 
 impl<'v> View<'v> {
 
-    pub fn new(buffer: Arc<Mutex<Buffer>>, width: usize, height: usize) -> View<'v> {
+    pub fn new(buffer: Arc<Mutex<Buffer>>, width: u16, height: u16) -> View<'v> {
         let cursor = Mark::Cursor(0);
         let top_line = Mark::DisplayMark(0);
 
@@ -103,19 +117,19 @@ impl<'v> View<'v> {
     /// Get the height of the View.
     ///
     /// This is the height of the UIBuffer minus the status bar height.
-    pub fn get_height(&self) -> usize {
+    pub fn get_height(&self) -> u16 {
         self.height - 1
     }
 
     /// Get the width of the View.
-    pub fn get_width(&self) -> usize {
+    pub fn get_width(&self) -> u16 {
         self.width
     }
 
     /// Resize the view
     ///
     /// This involves simply changing the size of the associated UIBuffer
-    pub fn resize(&mut self, width: usize, height: usize) {
+    pub fn resize(&mut self, width: u16, height: u16) {
         self.height = height;
         self.width = width;
     }
@@ -123,15 +137,17 @@ impl<'v> View<'v> {
     /// Clear the buffer
     ///
     /// Fills every cell in the UIBuffer with the space (' ') char.
-    pub fn clear(&mut self, rb: &mut RustBox) {
-        for row in 0..self.height {
-            for col in 0..self.width {
-                rb.print_char(col, row, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
-            }
-        }
+    pub fn clear(&mut self, rb: &mut Crossterm) {
+        // for row in 0..self.height {
+        //     for col in 0..self.width {
+        //         // rb.print_char(col, row, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
+        //         print_char!(col, row, ' ');
+        //     }
+        // }
+        rb.terminal().clear(crossterm::ClearType::All);
     }
 
-    pub fn draw(&mut self, rb: &mut RustBox) {
+    pub fn draw(&mut self, rb: &mut Crossterm) {
         self.clear(rb);
         {
             let buffer = self.buffer.lock().unwrap();
@@ -141,7 +157,7 @@ impl<'v> View<'v> {
             // FIXME: don't use unwrap here
             //        This will fail if for some reason the buffer doesnt have
             //        the top_line mark
-            let mut lines = buffer.lines_from(self.top_line).unwrap().take(height);
+            let mut lines = buffer.lines_from(self.top_line).unwrap().take(height as usize);
             for y_position in 0..height {
                 let line = lines.next().unwrap_or_else(Vec::new);
                 draw_line(rb, &line, y_position, self.left_col);
@@ -161,7 +177,7 @@ impl<'v> View<'v> {
     }
 
     #[cfg_attr(feature="clippy", allow(needless_range_loop))]
-    fn draw_status(&mut self, rb: &mut RustBox) {
+    fn draw_status(&mut self, rb: &mut Crossterm) {
         let buffer = self.buffer.lock().unwrap();
         let buffer_status = buffer.status_text();
         let mut cursor_status = buffer.get_mark_display_coords(self.cursor).unwrap_or((0,0));
@@ -173,31 +189,34 @@ impl<'v> View<'v> {
 
 
         for index in 0..width {
-            let ch: char = if index < status_text_len {
-                status_text[index] as char
-            } else { ' ' };
-            rb.print_char(index, height, RustBoxStyle::empty(), Color::Black, Color::Byte(19), ch);
-
+            let ch: String = if index < status_text_len.try_into().unwrap() {
+                (status_text[index as usize] as char).to_string()
+            } else { " ".to_owned() };
+            // rb.print_char(index, height, RustBoxStyle::empty(), Color::Black, Color::Byte(19), ch);
+            print_char!(index.try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), ch)); // Index 19 of 256 colors
         }
 
         if buffer.dirty {
             let data = ['[', '*', ']'];
             for (idx, ch) in data.iter().enumerate() {
-                rb.print_char(status_text_len + idx + 1, height, RustBoxStyle::empty(), Color::Black, Color::Red, *ch);
+                // rb.print_char(status_text_len + idx + 1, height, RustBoxStyle::empty(), Color::Black, Color::Red, *ch);
+                print_char!((status_text_len + idx + 1).try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Red), ch));
             }
         }
         if let Some((ref message, _time)) = self.message {
             for (offset, ch) in message.chars().enumerate() {
-                rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
+                // rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
+                print_char!(offset.try_into().unwrap(), (height + 1).try_into().unwrap(), ch);
             }
         }
     }
 
-    fn draw_cursor(&mut self, rb: &mut RustBox) {
+    fn draw_cursor(&mut self, rb: &mut Crossterm) {
         let buffer = self.buffer.lock().unwrap();
         if let Some(top_line) = buffer.get_mark_display_coords(self.top_line) {
             if let Some((x, y)) = buffer.get_mark_display_coords(self.cursor) {
-                rb.set_cursor((x - self.left_col) as isize, y as isize - top_line.1 as isize);
+                // rb.set_cursor((x - self.left_col) as isize, y as isize - top_line.1 as isize);
+                rb.cursor().goto((x - self.left_col as usize).try_into().unwrap(), (y - top_line.1).try_into().unwrap());
             }
         }
     }
@@ -244,16 +263,16 @@ impl<'v> View<'v> {
         if let (Some(cursor), Some((_, top_line))) = (buffer.get_mark_display_coords(self.cursor),
                                                       buffer.get_mark_display_coords(self.top_line)) {
 
-            let width  = (self.get_width()  - self.threshold) as isize;
-            let height = (self.get_height() - self.threshold) as isize;
+            let width  = self.get_width()  - self.threshold;
+            let height = self.get_height() - self.threshold;
 
             //left-right shifting
-            self.left_col = match cursor.0 as isize - self.left_col as isize {
-                x_offset if x_offset < self.threshold as isize => {
-                    cmp::max(0, self.left_col as isize - (self.threshold as isize - x_offset)) as usize
+            self.left_col = match cursor.0 as u16 - self.left_col {
+                x_offset if x_offset < self.threshold => {
+                    cmp::max(0, self.left_col - (self.threshold - x_offset))
                 }
                 x_offset if x_offset >= width => {
-                    self.left_col + (x_offset - width + 1) as usize
+                    self.left_col + (x_offset - width + 1)
                 }
                 _ => { self.left_col }
             };
@@ -268,8 +287,8 @@ impl<'v> View<'v> {
                     };
                     buffer.set_mark_to_object(self.top_line, obj);
                 }
-                y_offset if y_offset >= height => {
-                    let amount = (y_offset - height + 1) as usize;
+                y_offset if y_offset >= height as isize => {
+                    let amount = (y_offset - height as isize + 1) as usize;
                     let obj = TextObject {
                         kind: Kind::Line(Anchor::Same),
                         offset: Offset::Forward(amount, self.top_line)
@@ -399,24 +418,26 @@ impl<'v> View<'v> {
 
 }
 
-pub fn draw_line(rb: &mut RustBox, line: &[u8], idx: usize, left: usize) {
-    let width = rb.width() - 1;
-    let mut x = 0;
+pub fn draw_line(rb: &mut Crossterm, line: &[u8], idx: u16, left: u16) {
+    let width = rb.terminal().terminal_size().0 - 1;
+    let mut x: u16 = 0;
 
-    for ch in line.iter().skip(left) {
+    for ch in line.iter().skip(left as usize) {
         let ch = *ch as char;
         match ch {
             '\t' => {
                 let w = 4 - x % 4;
                 for _ in 0..w {
-                    rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
+                    // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
+                    print_char!(x, idx, ' ');
                     x += 1;
                 }
             }
             '\n' => {}
             _ => {
-                rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ch);
-                x += UnicodeWidthChar::width(ch).unwrap_or(1);
+                // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ch);
+                print_char!(x, idx, ch);
+                x += UnicodeWidthChar::width(ch).unwrap_or(1) as u16;
             }
         }
         if x >= width {
@@ -426,13 +447,15 @@ pub fn draw_line(rb: &mut RustBox, line: &[u8], idx: usize, left: usize) {
 
     // Replace any cells after end of line with ' '
     while x < width {
-        rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
+        // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
+        print_char!(x, idx, ' ');
         x += 1;
     }
 
     // If the line is too long to fit on the screen, show an indicator
-    let indicator = if line.len() > width + left { '→' } else { ' ' };
-    rb.print_char(width, idx, RustBoxStyle::empty(), Color::White, Color::Black, indicator);
+    let indicator = if line.len() > (width + left) as usize { '→' } else { ' ' };
+    // rb.print_char(width, idx, RustBoxStyle::empty(), Color::White, Color::Black, indicator);
+    print_char!(width, idx, indicator);
 }
 
 #[cfg(test)]

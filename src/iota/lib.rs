@@ -9,7 +9,7 @@
 #![feature(fn_traits)] 
 #![warn(missing_docs)]
 
-extern crate rustbox;
+extern crate crossterm;
 extern crate gapbuffer;
 extern crate tempdir;
 extern crate regex;

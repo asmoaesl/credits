@@ -7,21 +7,22 @@ homepage = "https://github.com/gchp/iota"
 repository = "https://github.com/gchp/iota"
 keywords = ["editor", "text", "terminal"]
 readme = "README.md"
-authors = ["Greg Chapple <gregchapple1@gmail.com>"]
+authors = ["Greg Chapple <gregchapple1@gmail.com>", "Luke I. Wilson <asmoaesl@gmail.com>"]
 
 [dependencies]
+crossterm = "0.9.6"
 docopt = "0.6.47"
 rustc-serialize = "0.3.14"
 gapbuffer = "0.1.1"
 tempdir = "0.3.0"
 unicode-width = "0.1.1"
 libc = "0.1"
-clippy = {version = "*", optional = true}
+clippy = { version = "*", optional = true }
 regex = "0.1"
 lazy_static = "0.2"
 
-[dependencies.rustbox]
-git = "https://github.com/gchp/rustbox"
+# [dependencies.rustbox]
+# git = "https://github.com/gchp/rustbox"
 
 [lib]
 name = "iota"

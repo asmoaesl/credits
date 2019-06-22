@@ -4,7 +4,8 @@ use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc::channel;
 use std::collections::HashMap;
 
-use rustbox::{RustBox, Event};
+// use rustbox::{RustBox, Event};
+use crossterm::{InputEvent, KeyEvent, RawScreen, Crossterm};
 
 use input::Input;
 use keyboard::Key;
@@ -47,7 +48,7 @@ pub struct Editor<'e> {
     buffers: Vec<Arc<Mutex<Buffer>>>,
     view: View<'e>,
     running: bool,
-    rb: RustBox,
+    rb: Crossterm,
     mode: Box<Mode + 'e>,
 
     command_queue: Receiver<Command>,
@@ -57,9 +58,8 @@ pub struct Editor<'e> {
 impl<'e> Editor<'e> {
 
     /// Create a new Editor instance from the given source
-    pub fn new(source: Input, mode: Box<Mode + 'e>, rb: RustBox) -> Editor<'e> {
-        let height = rb.height();
-        let width = rb.width();
+    pub fn new(source: Input, mode: Box<Mode + 'e>, rb: Crossterm) -> Editor<'e> {
+        let (width, height) = rb.terminal().terminal_size();
 
         let (snd, recv) = channel();
 
@@ -103,7 +103,7 @@ impl<'e> Editor<'e> {
     ///
     /// If there is no active Overlay, the key event is sent to the current
     /// Mode, which returns a Command which we dispatch to handle_command.
-    fn handle_key_event(&mut self, event: Event) {
+    fn handle_key_event(&mut self, event: KeyEvent) {
         let key = Key::from_event(&mut self.rb, event);
  
         let key = match key {
@@ -137,7 +137,7 @@ impl<'e> Editor<'e> {
     /// Handle resize events
     ///
     /// width and height represent the new height of the window.
-    fn handle_resize_event(&mut self, width: usize, height: usize) {
+    fn handle_resize_event(&mut self, width: u16, height: u16) {
         self.view.resize(width, height);
     }
 
@@ -224,19 +224,24 @@ impl<'e> Editor<'e> {
 
     /// Start Iota!
     pub fn start(&mut self) {
-        while self.running {
-            self.draw();
-            self.rb.present();
-            self.view.maybe_clear_message();
+        if let Ok(_raw) = RawScreen::into_raw_mode() { // Keep terminal from processing events for us
+            let input = self.rb.input();
+            let mut sync_stdin = input.read_sync();
+            while self.running {
+                self.draw();
+                self.rb.terminal().clear(crossterm::ClearType::All);
+                self.view.maybe_clear_message();
 
-            match self.rb.poll_event(true) {
-                Ok(Event::ResizeEvent(width, height)) => self.handle_resize_event(width as usize, height as usize),
-                Ok(key_event) => self.handle_key_event(key_event),
-                _ => {}
-            }
+                match sync_stdin.next() {
+                    // FIXME: Update this when it gets fully added to crossterm
+                    // Some(InputEvent::Resize) => self.handle_resize_event(width, height),
+                    Some(InputEvent::Keyboard(key_event)) => self.handle_key_event(key_event),
+                    _ => {}
+                }
 
-            while let Ok(message) = self.command_queue.try_recv() {
-                self.handle_command(message)
+                while let Ok(message) = self.command_queue.try_recv() {
+                    self.handle_command(message)
+                }
             }
         }
     }

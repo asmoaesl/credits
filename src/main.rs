@@ -2,7 +2,7 @@
 
 extern crate libc;
 extern crate rustc_serialize;
-extern crate rustbox;
+extern crate crossterm;
 extern crate docopt;
 extern crate iota;
 
@@ -13,7 +13,10 @@ use iota::{
     StandardMode, NormalMode, EmacsMode,
     Mode,
 };
-use rustbox::{InitOptions, RustBox, InputMode, OutputMode};
+
+// use rustbox::{InitOptions, RustBox, InputMode, OutputMode};
+use crossterm::Crossterm;
+
 static USAGE: &'static str = "
 Usage: iota [<filename>] [options]
        iota --help
@@ -56,14 +59,15 @@ fn main() {
 
 
     // initialise rustbox
-    let rb = match RustBox::init(InitOptions{
-        buffer_stderr: stderr_is_atty,
-        input_mode: InputMode::Esc,
-        output_mode: OutputMode::EightBit,
-    }) {
-        Result::Ok(v) => v,
-        Result::Err(e) => panic!("{}", e),
-    };
+    // let rb = match RustBox::init(InitOptions{
+    //     buffer_stderr: stderr_is_atty,
+    //     input_mode: InputMode::Esc,
+    //     output_mode: OutputMode::EightBit,
+    // }) {
+    //     Result::Ok(v) => v,
+    //     Result::Err(e) => panic!("{}", e),
+    // };
+    let ct = Crossterm::new();
 
     // initialise the editor mode
     let mode: Box<Mode> = if args.flag_vi {
@@ -75,6 +79,6 @@ fn main() {
     };
 
     // start the editor
-    let mut editor = Editor::new(source, mode, rb);
+    let mut editor = Editor::new(source, mode, ct);
     editor.start();
 }
