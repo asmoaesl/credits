@@ -1,9 +1,10 @@
 use std::cmp;
+use std::io::prelude::*;
 use std::convert::TryInto;
 
 use unicode_width::UnicodeWidthStr;
 // use rustbox::{Style, Color, RustBox};
-use crossterm::{color, Attribute, Color, Colored, Colorize, Styler, Crossterm};
+use crossterm::{color, TerminalCursor, Attribute, Color, Colored, Colorize, Styler, Crossterm};
 
 use editor::ALL_COMMANDS;
 use command::BuilderEvent;
@@ -70,9 +71,13 @@ impl Overlay for CommandPrompt {
 
         macro_rules! print_char {
             ($col:expr, $row:expr, $ch:expr) => {
+                let cursor = TerminalCursor::new();
                 cursor.goto($col, $row).unwrap();
-                terminal.write($ch).unwrap();
-                terminal.write(Attribute::Reset).unwrap(); // Clear color and style settings
+                let stdout = std::io::stdout();
+                let mut handle = stdout.lock();
+                write!(handle, "{}{}", $ch, Attribute::Reset).unwrap();
+                // crossterm::terminal().write($ch).unwrap();
+                // crossterm::terminal().write(Attribute::Reset).unwrap(); // Clear color and style settings
             };
         }
 

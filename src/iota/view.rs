@@ -11,7 +11,7 @@ use std::sync::{Mutex, Arc};
 use std::time::SystemTime;
 
 // use rustbox::{Color, RustBox, Style as RustBoxStyle};
-use crossterm::{Color, Colorize, Colored, Styler, Attribute, Crossterm};
+use crossterm::{Color, TerminalCursor, Colorize, Colored, Styler, Attribute, Crossterm};
 
 use tempdir::TempDir;
 use unicode_width::UnicodeWidthChar;
@@ -25,9 +25,13 @@ use textobject::{Anchor, TextObject, Kind, Offset};
 // Such that: rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
 macro_rules! print_char {
     ($col:expr, $row:expr, $ch:expr) => {
-        crossterm::cursor().goto($col, $row).unwrap();
-        crossterm::terminal().write($ch).unwrap();
-        crossterm::terminal().write(Attribute::Reset).unwrap(); // Clear color and style settings
+        let cursor = TerminalCursor::new();
+        cursor.goto($col, $row).unwrap();
+        let stdout = std::io::stdout();
+        let mut handle = stdout.lock();
+        write!(handle, "{}{}", $ch, Attribute::Reset).unwrap();
+        // crossterm::terminal().write($ch).unwrap();
+        // crossterm::terminal().write(Attribute::Reset).unwrap(); // Clear color and style settings
     };
 }
 

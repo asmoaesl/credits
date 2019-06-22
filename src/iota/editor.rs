@@ -229,7 +229,7 @@ impl<'e> Editor<'e> {
             let mut sync_stdin = input.read_sync();
             while self.running {
                 self.draw();
-                self.rb.terminal().clear(crossterm::ClearType::All);
+                // self.rb.terminal().clear(crossterm::ClearType::All);
                 self.view.maybe_clear_message();
 
                 match sync_stdin.next() {
