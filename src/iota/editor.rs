@@ -139,6 +139,7 @@ impl<'e> Editor<'e> {
     /// width and height represent the new height of the window.
     fn handle_resize_event(&mut self, width: u16, height: u16) {
         self.view.resize(width, height);
+        self.draw();
     }
 
     /// Draw the current view to the frontend
@@ -157,6 +158,7 @@ impl<'e> Editor<'e> {
                 Action::Operation(_) => self.handle_operation(command.clone()),
             }
         }
+        self.draw(); // Redraw after updating
     }
 
 
@@ -227,9 +229,11 @@ impl<'e> Editor<'e> {
         if let Ok(_raw) = RawScreen::into_raw_mode() { // Keep terminal from processing events for us
             let mut term_size = self.rb.terminal().terminal_size();
 
+            self.draw(); // Draw once for the first time
+
             let mut sync_stdin = self.rb.input().read_sync();
             while self.running {
-                self.draw();
+                // self.draw();
                 // self.rb.terminal().clear(crossterm::ClearType::All);
                 self.view.maybe_clear_message();
 

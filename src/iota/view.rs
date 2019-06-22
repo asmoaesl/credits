@@ -220,7 +220,7 @@ impl<'v> View<'v> {
         if let Some(top_line) = buffer.get_mark_display_coords(self.top_line) {
             if let Some((x, y)) = buffer.get_mark_display_coords(self.cursor) {
                 // rb.set_cursor((x - self.left_col) as isize, y as isize - top_line.1 as isize);
-                rb.cursor().goto((x - self.left_col as usize).try_into().unwrap(), (y - top_line.1).try_into().unwrap());
+                rb.cursor().goto((x - self.left_col as usize) as u16, (y - top_line.1) as u16).unwrap();
             }
         }
     }
