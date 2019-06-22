@@ -225,8 +225,9 @@ impl<'e> Editor<'e> {
     /// Start Iota!
     pub fn start(&mut self) {
         if let Ok(_raw) = RawScreen::into_raw_mode() { // Keep terminal from processing events for us
-            let input = self.rb.input();
-            let mut sync_stdin = input.read_sync();
+            let mut term_size = self.rb.terminal().terminal_size();
+
+            let mut sync_stdin = self.rb.input().read_sync();
             while self.running {
                 self.draw();
                 // self.rb.terminal().clear(crossterm::ClearType::All);
@@ -239,10 +240,18 @@ impl<'e> Editor<'e> {
                     _ => {}
                 }
 
+                // Update view size by polling view (see FIXME above)
+                if term_size != self.rb.terminal().terminal_size() { // Outdated, let's update
+                    term_size = self.rb.terminal().terminal_size();
+                    self.handle_resize_event(term_size.0, term_size.1);
+                }
+
                 while let Ok(message) = self.command_queue.try_recv() {
                     self.handle_command(message)
                 }
             }
+        } else {
+            panic!("Could not start application with raw mode. Unsupported terminal?");
         }
     }
 }

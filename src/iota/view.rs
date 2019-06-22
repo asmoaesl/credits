@@ -148,7 +148,7 @@ impl<'v> View<'v> {
         //         print_char!(col, row, ' ');
         //     }
         // }
-        rb.terminal().clear(crossterm::ClearType::All);
+        rb.terminal().clear(crossterm::ClearType::All).unwrap();
     }
 
     pub fn draw(&mut self, rb: &mut Crossterm) {
