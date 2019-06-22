@@ -74,7 +74,7 @@ fn main() {
     } else if args.flag_emacs {
         Box::new(EmacsMode::new())    
     } else {
-         Box::new(StandardMode::new())
+        Box::new(StandardMode::new())
     };
 
     // start the editor

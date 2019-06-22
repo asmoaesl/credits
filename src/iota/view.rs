@@ -26,7 +26,7 @@ use textobject::{Anchor, TextObject, Kind, Offset};
 macro_rules! print_char {
     ($dst:expr, $col:expr, $row:expr, $ch:expr) => {
         let cursor = TerminalCursor::new();
-        cursor.hide().unwrap();
+        // cursor.hide().unwrap();
         cursor.goto($col, $row).unwrap();
         write!($dst, "{}{}", $ch, Attribute::Reset).unwrap();
         // crossterm::terminal().write($ch).unwrap();
@@ -430,6 +430,10 @@ pub fn draw_line(rb: &mut Crossterm, line: &[u8], idx: u16, left: u16) {
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
 
+    // In Iota, this function would attempt to draw every character individually, but crossterm is better
+    // at drawing more text than a character at a time. It prefers being buffered. This is the solution.
+    let mut formatted_line = String::new(); // Line after applying tabs and characters that fit within view
+
     for ch in line.iter().skip(left as usize) {
         let ch = *ch as char;
         match ch {
@@ -437,28 +441,35 @@ pub fn draw_line(rb: &mut Crossterm, line: &[u8], idx: u16, left: u16) {
                 let w = 4 - x % 4;
                 for _ in 0..w {
                     // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
-                    print_char!(out, x, idx, ' ');
+                    // print_char!(out, x, idx, ' ');
+                    formatted_line.push(' ');
                     x += 1;
                 }
             }
             '\n' => {}
             _ => {
                 // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ch);
-                print_char!(out, x, idx, ch);
+                // print_char!(out, x, idx, ch);
+                formatted_line.push(ch);
                 x += UnicodeWidthChar::width(ch).unwrap_or(1) as u16;
             }
         }
-        if x >= width {
+        if x >= width { // When line has run to the end of the view
             break;
         }
     }
 
     // Replace any cells after end of line with ' '
-    while x < width {
-        // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
-        print_char!(out, x, idx, ' ');
-        x += 1;
-    }
+    // while x < width {
+    //     // rb.print_char(x, idx, RustBoxStyle::empty(), Color::White, Color::Black, ' ');
+    //     print_char!(out, x, idx, ' ');
+    //     x += 1;
+    // }
+    // if x < width { // Again, crossterm is a little higher-level
+    //     formatted_line.push('\n');
+    // }
+
+    print_char!(out, 0, idx, formatted_line); // Write the entire line
 
     // If the line is too long to fit on the screen, show an indicator
     let indicator = if line.len() > (width + left) as usize { '→' } else { ' ' };

@@ -24,9 +24,6 @@ clippy = { version = "*", optional = true }
 regex = "0.1"
 lazy_static = "0.2"
 
-# [dependencies.rustbox]
-# git = "https://github.com/gchp/rustbox"
-
 [lib]
 name = "iota"
 path = "src/iota/lib.rs"
