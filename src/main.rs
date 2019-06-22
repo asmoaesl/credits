@@ -1,39 +1,37 @@
 #![cfg(not(test))]
 
+#[macro_use]
+extern crate structopt;
+
 extern crate libc;
 extern crate rustc_serialize;
 extern crate crossterm;
-extern crate docopt;
 extern crate iota;
 
 use std::io::stdin;
-use docopt::Docopt;
+use std::path::PathBuf;
+// use docopt::Docopt;
 use iota::{
     Editor, Input,
     StandardMode, NormalMode, EmacsMode,
     Mode,
 };
 
-// use rustbox::{InitOptions, RustBox, InputMode, OutputMode};
 use crossterm::Crossterm;
 
-static USAGE: &'static str = "
-Usage: iota [<filename>] [options]
-       iota --help
+use structopt::StructOpt;
 
-Options:
-    --emacs                        Start Iota with emacs-like mode
-    --vi                           Start Iota with vi-like modes
-    -h, --help                     Show this message.
-";
-
-
-#[derive(RustcDecodable, Debug)]
-struct Args {
+#[derive(StructOpt, Debug)]
+#[structopt(name = "iota")]
+struct Opt {
+    #[structopt(name = "FILE")]
     arg_filename: Option<String>,
+    /// Start Iota with Emacs-like mode
+    #[structopt(long = "emacs")]
     flag_emacs: bool,
+    /// Start Iota with Vi-like modes
+    #[structopt(long = "vi")]
     flag_vi: bool,
-    flag_help: bool,
 }
 
 fn is_atty(fileno: libc::c_int) -> bool {
@@ -43,12 +41,13 @@ fn is_atty(fileno: libc::c_int) -> bool {
 }
 
 fn main() {
-    let args: Args = Docopt::new(USAGE)
-                            .and_then(|d| d.decode())
-                            .unwrap_or_else(|e| e.exit());
+    // let args: Args = Docopt::new(USAGE)
+    //                         .and_then(|d| d.decode())
+    //                         .unwrap_or_else(|e| e.exit());
+    let args = Opt::from_args();
 
     let stdin_is_atty = is_atty(libc::STDIN_FILENO);
-    let stderr_is_atty = is_atty(libc::STDERR_FILENO);
+    // let stderr_is_atty = is_atty(libc::STDERR_FILENO);
 
     // editor source - either a filename or stdin
     let source = if stdin_is_atty {

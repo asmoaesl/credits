@@ -11,7 +11,7 @@ authors = ["Greg Chapple <gregchapple1@gmail.com>", "Luke I. Wilson <asmoaesl@gm
 
 [dependencies]
 crossterm = "0.9.6"
-docopt = "0.6.47"
+structopt = "0.2.16"
 rustc-serialize = "0.3.14"
 gapbuffer = "0.1.1"
 tempdir = "0.3.0"
