@@ -141,7 +141,6 @@ impl<'e> Editor<'e> {
 
     /// Handle the given command, performing the associated action
     fn handle_command(&mut self, command: Command) {
-        eprintln!("hcmd");
         let repeat = if command.number > 0 {
             command.number
         } else { 1 };

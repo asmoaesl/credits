@@ -65,9 +65,6 @@ impl Overlay for CommandPrompt {
             max = cmp::max(max, k.len().try_into().unwrap());
         }
 
-        let cursor = rb.cursor();
-        let terminal = rb.terminal();
-
         macro_rules! print_char {
             ($col:expr, $row:expr, $ch:expr) => {
                 let cursor = TerminalCursor::new();
