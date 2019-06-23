@@ -6,12 +6,12 @@ extern crate structopt;
 extern crate libc;
 extern crate rustc_serialize;
 extern crate crossterm;
-extern crate iota;
+extern crate credits;
 
 use std::io::stdin;
 use std::path::PathBuf;
 // use docopt::Docopt;
-use iota::{
+use credits::{
     Editor, Input,
     StandardMode, NormalMode, EmacsMode,
     Mode,
@@ -26,10 +26,10 @@ use structopt::StructOpt;
 struct Opt {
     #[structopt(name = "FILE")]
     arg_filename: Option<String>,
-    /// Start Iota with Emacs-like mode
+    /// Start Credits with Emacs-like mode
     #[structopt(long = "emacs")]
     flag_emacs: bool,
-    /// Start Iota with Vi-like modes
+    /// Start Credits with Vi-like modes
     #[structopt(long = "vi")]
     flag_vi: bool,
 }

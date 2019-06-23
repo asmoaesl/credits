@@ -1,13 +1,12 @@
 [project]
-name = "iota-editor"
+name = "credits"
 version = "0.1.0"
-description = "A simple text editor"
+description = "A simple text editor for cross-platform edits."
 license = "MIT"
-homepage = "https://github.com/gchp/iota"
-repository = "https://github.com/gchp/iota"
+repository = "https://github.com/asmoaesl/credits"
 keywords = ["editor", "text", "terminal"]
 readme = "README.md"
-authors = ["Greg Chapple <gregchapple1@gmail.com>", "Luke I. Wilson <asmoaesl@gmail.com>"]
+authors = ["Luke I. Wilson <asmoaesl@gmail.com>", "Greg Chapple <gregchapple1@gmail.com>"]
 
 [patch.crates-io]
 crossterm_input = { path = "crossterm_input" } # temporary, until #157 gets pulled for crossterm
@@ -25,10 +24,10 @@ regex = "0.1"
 lazy_static = "0.2"
 
 [lib]
-name = "iota"
-path = "src/iota/lib.rs"
+name = "credits"
+path = "src/credits/lib.rs"
 
 [[bin]]
 path = "src/main.rs"
-name = "iota"
+name = "credits"
 doc = false
