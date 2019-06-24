@@ -126,7 +126,7 @@ impl<'v> View<'v> {
 
     /// Get the width of the View.
     pub fn get_width(&self) -> u16 {
-        self.width
+        self.width + 1 // Everything from Iota seems to believe the width of the window is less than it is...
     }
 
     /// Resize the view
@@ -182,49 +182,33 @@ impl<'v> View<'v> {
     #[cfg_attr(feature="clippy", allow(needless_range_loop))]
     fn draw_status(&mut self, rb: &mut Crossterm) {
         let buffer = self.buffer.lock().unwrap();
-        let buffer_status = buffer.status_text();
+        let buffer_name = buffer.file_name();
 
         let mut cursor_status = buffer.get_mark_display_coords(self.cursor).unwrap_or((0,0));
         cursor_status = (cursor_status.0 + 1, cursor_status.1 + 1);
 
-        let mut status_text: String = format!("{} {} ({}, {})", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), buffer_status, cursor_status.0, cursor_status.1);
+        let mut status_text: String = format!("{} [{}]", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), buffer_name);
 
         let width = self.get_width();
-        let height = self.get_height() - 1;
+        let height = self.get_height();
 
         let stdout = std::io::stdout();
         let mut out = stdout.lock();
 
-        // for index in 0..width {
-        //     let ch: String = if index < status_text_len.try_into().unwrap() {
-        //         (status_text[index as usize] as char).to_string()
-        //     } else { " ".to_owned() };
-        //     // rb.print_char(index, height, RustBoxStyle::empty(), Color::Black, Color::Byte(19), ch);
-        //     print_char!(out, index.try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), ch)); // Index 19 of 256 colors
-        // }
-
-        // print_char!(out, 0, height, format!("{}{}", Colored::Bg(Color::Rgb{r:0,g:0,b:175}), status_text)); // print 'name (x, y)'
-
-        status_text.push(' ');
-        print_char!(out, 0, height, status_text);
-
         if buffer.dirty {
-            // let data = ['[', '*', ']'];
-            // for (idx, ch) in data.iter().enumerate() {
-            //     // rb.print_char(status_text_len + idx + 1, height, RustBoxStyle::empty(), Color::Black, Color::Red, *ch);
-            //     print_char!(out, (status_text_len + idx + 1).try_into().unwrap(), height.try_into().unwrap(), format!("{}{}", Colored::Bg(Color::Red), ch));
-            // }
-
-            // status_text.push_str(&format!(" {}{}", Colored::Bg(Color::Red), "[*]"));
-            print_char!(out, status_text.len() as u16, height, format!("{}{}", Colored::Bg(Color::Red), "[*]"));
+            status_text.push_str("●");
         }
+
+        status_text.push_str(&format!(" ({}, {})", cursor_status.0, cursor_status.1));
+
+        let len = status_text.len() as u16;
+        for _ in 0..width-len {
+            status_text.push(' ');
+        }
+        print_char!(out, 0, height, status_text);
 
         // For the message at the very bottom of the window
         if let Some((ref message, _time)) = self.message {
-            // for (offset, ch) in message.chars().enumerate() {
-            //     // rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
-            //     print_char!(out, offset.try_into().unwrap(), (height + 1).try_into().unwrap(), ch);
-            // }
             print_char!(out, 0, height + 1, message);
         }
     }

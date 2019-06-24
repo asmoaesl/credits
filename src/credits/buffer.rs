@@ -492,11 +492,11 @@ impl Buffer {
         }
     }
 
-    /// Returns the status text for this buffer.
-    pub fn status_text(&self) -> String {
+    /// Returns the file name for this buffer.
+    pub fn file_name(&self) -> String {
         match self.file_path {
-            Some(ref path)  =>  format!("[{}] ", path.display()),
-            None            =>  "untitled ".into(),
+            Some(ref path) => format!("{}", path.display()),
+            None           => "untitled".into(),
         }
     }
 

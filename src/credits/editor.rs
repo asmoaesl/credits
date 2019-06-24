@@ -44,11 +44,11 @@ lazy_static! {
 ///
 /// This is the top-most structure in Iota.
 pub struct Editor<'e> {
-    buffers: Vec<Arc<Mutex<Buffer>>>,
+    // buffers: Vec<Arc<Mutex<Buffer>>>,
     view: View<'e>,
     running: bool,
     rb: Crossterm,
-    mode: Box<Mode + 'e>,
+    mode: Box<dyn Mode + 'e>,
 
     command_queue: Receiver<Command>,
     command_sender: Sender<Command>,
@@ -59,7 +59,7 @@ pub struct Editor<'e> {
 impl<'e> Editor<'e> {
 
     /// Create a new Editor instance from the given source
-    pub fn new(source: Input, mode: Box<Mode + 'e>, rb: Crossterm) -> Editor<'e> {
+    pub fn new(source: Input, mode: Box<dyn Mode + 'e>, rb: Crossterm) -> Editor<'e> {
         let (width, height) = rb.terminal().terminal_size();
 
         let (snd, recv) = channel();
@@ -82,7 +82,7 @@ impl<'e> Editor<'e> {
         let view = View::new(buffers[0].clone(), width, height);
 
         Editor {
-            buffers: buffers,
+            // buffers: buffers,
             view: view,
             running: true,
             rb: rb,
@@ -179,7 +179,7 @@ impl<'e> Editor<'e> {
                 	} else {
                 		self.just_attempted_exit = true;
                 		
-                		let args = BuilderArgs::new().with_str("Unsaved changes".into());
+                		let args = BuilderArgs::new().with_str("Warning: unsaved changes (twice to force quit)".into());
                 		let _ = self.command_sender.send(Command::show_message(Some(args)));
                 	}
                 } else {
@@ -266,6 +266,9 @@ impl<'e> Editor<'e> {
                     self.handle_command(message)
                 }
             }
+
+            let _ = crossterm::terminal().clear(crossterm::ClearType::All); // Clear the terminal before returning
+
         } else {
             panic!("Could not start application with raw mode. Unsupported terminal?");
         }
