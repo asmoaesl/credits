@@ -52,6 +52,8 @@ pub struct Editor<'e> {
 
     command_queue: Receiver<Command>,
     command_sender: Sender<Command>,
+    
+    just_attempted_exit: bool,
 }
 
 impl<'e> Editor<'e> {
@@ -88,6 +90,8 @@ impl<'e> Editor<'e> {
 
             command_queue: recv,
             command_sender: snd,
+            
+            just_attempted_exit: false,
         }
     }
 
@@ -146,8 +150,19 @@ impl<'e> Editor<'e> {
         } else { 1 };
         for _ in 0..repeat {
             match command.action {
-                Action::Instruction(_) => self.handle_instruction(command.clone()),
-                Action::Operation(_) => self.handle_operation(command.clone()),
+            	Action::Instruction(Instruction::ExitEditor) => self.handle_instruction(command.clone()),
+                Action::Instruction(_) => {
+                	self.handle_instruction(command.clone());
+                	// To keep the "Unsaved changes" message from preventing force quit:
+                	match command.action {
+                		Action::Instruction(Instruction::ShowMessage(_)) => {},
+                		_ => self.just_attempted_exit = false,
+                	}
+                }
+                Action::Operation(_) => {
+                	self.handle_operation(command.clone());
+                	self.just_attempted_exit = false;
+                }
             }
         }
         self.draw(); // Redraw after updating
@@ -159,12 +174,17 @@ impl<'e> Editor<'e> {
             Action::Instruction(Instruction::SaveBuffer) => { self.view.try_save_buffer() }
             Action::Instruction(Instruction::ExitEditor) => {
                 if self.view.buffer_is_dirty() {
-                    let args = BuilderArgs::new().with_str("Unsaved changes".into());
-                    let _ = self.command_sender.send(Command::show_message(Some(args)));
+                	if self.just_attempted_exit {
+                		self.running = false; // Allow "force quit"
+                	} else {
+                		self.just_attempted_exit = true;
+                		
+                		let args = BuilderArgs::new().with_str("Unsaved changes".into());
+                		let _ = self.command_sender.send(Command::show_message(Some(args)));
+                	}
                 } else {
                     self.running = false;
                 }
-
             }
             Action::Instruction(Instruction::SetMark(mark)) => {
                 if let Some(object) = command.object {

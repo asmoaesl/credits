@@ -6,7 +6,7 @@ use keymap::CommandInfo;
 
 /// Instructions for the Editor.
 /// These do NOT alter the text, but may change editor/view state
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Instruction {
     SaveBuffer,
     //FindFile,
@@ -25,7 +25,7 @@ pub enum Instruction {
 /// Note that these differ from `log::Change` in that they are higher-level
 /// operations dependent on state (cursor/mark locations, etc.), as opposed
 /// to concrete operations on absolute indexes (insert 'a' at index 158, etc.)
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Operation {
     Insert(char), // insert text
     DeleteObject,         // delete some object
@@ -35,14 +35,14 @@ pub enum Operation {
     Redo,         // replay buffer transaction log
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Action {
     Operation(Operation),
     Instruction(Instruction),
 }
 
 /// A complete, actionable command
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Command {
     pub number: i32,        // numeric paramter, line number, repeat count, etc.
     pub action: Action,     // what to do
