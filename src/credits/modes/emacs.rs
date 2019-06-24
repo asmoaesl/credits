@@ -1,11 +1,10 @@
 use crossterm::KeyEvent;
-use keymap::{KeyMap, KeyMapState, CommandInfo};
-use command::{BuilderEvent, BuilderArgs };
-use textobject::{Offset, Anchor, Kind};
-use buffer::Mark;
+use crate::keymap::{KeyMap, KeyMapState, CommandInfo};
+use crate::command::{BuilderEvent, BuilderArgs };
+use crate::textobject::{Offset, Anchor, Kind};
+use crate::buffer::Mark;
 
 use super::Mode;
-
 
 /// Emacs mode uses Emacs-like keybindings.
 ///

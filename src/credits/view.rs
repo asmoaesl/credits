@@ -1,7 +1,6 @@
 // For a list of 256 terminal colors: https://jonasjacek.github.io/colors/
 
 use std::cmp;
-use std::convert::TryInto;
 use std::borrow::Cow;
 use std::path::Path;
 use std::path::PathBuf;
@@ -16,10 +15,10 @@ use crossterm::{Color, TerminalCursor, Colorize, Colored, Styler, Attribute, Cro
 use tempdir::TempDir;
 use unicode_width::UnicodeWidthChar;
 
-use buffer::{Buffer, Mark};
-use overlay::{CommandPrompt, Overlay, OverlayType};
-use utils;
-use textobject::{Anchor, TextObject, Kind, Offset};
+use crate::buffer::{Buffer, Mark};
+use crate::overlay::{CommandPrompt, Overlay, OverlayType};
+use crate::utils;
+use crate::textobject::{Anchor, TextObject, Kind, Offset};
 
 // FIXME: Temporary replacement for the RustBox method `print_char` and this source's reliance on it.
 // Such that: rb.print_char(offset, height + 1, RustBoxStyle::empty(), Color::White, Color::Black, ch);
@@ -481,8 +480,8 @@ mod tests {
     use std::sync::{Arc, Mutex};
     use std::rc::Rc;
 
-    use view::View;
-    use buffer::Buffer;
+    use crate::view::View;
+    use crate::buffer::Buffer;
 
     fn setup_view(testcase: &'static str) -> View {
         let buffer = Arc::new(Mutex::new(Buffer::new()));

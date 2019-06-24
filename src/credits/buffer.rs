@@ -11,10 +11,10 @@ use std::convert::From;
 use gapbuffer::GapBuffer;
 
 // local dependencies
-use log::{Log, Change, LogEntry};
-use input::Input;
-use iterators::Lines;
-use textobject::{TextObject, Kind, Offset, Anchor};
+use crate::log::{Log, Change, LogEntry};
+use crate::input::Input;
+use crate::iterators::Lines;
+use crate::textobject::{TextObject, Kind, Offset, Anchor};
 
 
 #[derive(PartialEq, Debug)]
@@ -716,8 +716,8 @@ fn commit(transaction: &LogEntry, text: &mut GapBuffer<u8>) {
 #[cfg(test)]
 mod test {
 
-    use buffer::{Buffer, Mark, MarkPosition};
-    use textobject::{TextObject, Offset, Kind, Anchor};
+    use crate::buffer::{Buffer, Mark, MarkPosition};
+    use crate::textobject::{TextObject, Offset, Kind, Anchor};
     use super::get_line_info;
 
     fn setup_buffer(testcase: &'static str) -> Buffer {

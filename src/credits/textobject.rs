@@ -1,6 +1,6 @@
 use std::default::Default;
 
-use buffer::Mark;
+use crate::buffer::Mark;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Kind {

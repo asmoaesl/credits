@@ -7,12 +7,12 @@ use std::collections::HashMap;
 // use rustbox::{RustBox, Event};
 use crossterm::{InputEvent, KeyEvent, RawScreen, Crossterm};
 
-use input::Input;
-use view::View;
-use modes::{Mode, ModeType, InsertMode, NormalMode};
-use buffer::Buffer;
-use command::Command;
-use command::{Action, BuilderEvent, BuilderArgs, Operation, Instruction};
+use crate::input::Input;
+use crate::view::View;
+use crate::modes::{Mode, ModeType, InsertMode, NormalMode};
+use crate::buffer::Buffer;
+use crate::command::Command;
+use crate::command::{Action, BuilderEvent, BuilderArgs, Operation, Instruction};
 
 
 type EditorCommand = fn(Option<BuilderArgs>) -> Command;

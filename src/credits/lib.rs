@@ -24,7 +24,6 @@ mod input;
 mod utils;
 mod buffer;
 mod editor;
-mod keyboard;
 mod keymap;
 mod view;
 mod log;

@@ -1,5 +1,5 @@
 use crossterm::KeyEvent;
-use command::BuilderEvent;
+use crate::command::BuilderEvent;
 
 pub use self::standard::StandardMode;
 pub use self::normal::NormalMode;

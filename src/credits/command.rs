@@ -1,8 +1,8 @@
-use buffer::Mark;
-use textobject::{ TextObject, Offset, Kind };
-use overlay::OverlayType;
-use modes::ModeType;
-use keymap::CommandInfo;
+use crate::buffer::Mark;
+use crate::textobject::{ TextObject, Offset, Kind };
+use crate::overlay::OverlayType;
+use crate::modes::ModeType;
+use crate::keymap::CommandInfo;
 
 /// Instructions for the Editor.
 /// These do NOT alter the text, but may change editor/view state

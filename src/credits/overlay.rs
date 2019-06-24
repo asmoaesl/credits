@@ -4,11 +4,11 @@ use std::convert::TryInto;
 
 use unicode_width::UnicodeWidthStr;
 // use rustbox::{Style, Color, RustBox};
-use crossterm::{KeyEvent, TerminalCursor, Attribute, Color, Colored, Colorize, Styler, Crossterm};
+use crossterm::{KeyEvent, TerminalCursor, Attribute, Color, Colored, Colorize, Crossterm};
 
-use editor::ALL_COMMANDS;
-use command::BuilderEvent;
-use keymap::CommandInfo;
+use crate::editor::ALL_COMMANDS;
+use crate::command::BuilderEvent;
+use crate::keymap::CommandInfo;
 
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

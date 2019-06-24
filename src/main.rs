@@ -1,15 +1,13 @@
 #![cfg(not(test))]
 
-#[macro_use]
-extern crate structopt;
+use structopt;
 
-extern crate libc;
-extern crate rustc_serialize;
-extern crate crossterm;
-extern crate credits;
+use libc;
+use rustc_serialize;
+use crossterm;
+use credits;
 
 use std::io::stdin;
-use std::path::PathBuf;
 // use docopt::Docopt;
 use credits::{
     Editor, Input,

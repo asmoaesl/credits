@@ -7,6 +7,7 @@ repository = "https://github.com/asmoaesl/credits"
 keywords = ["editor", "text", "terminal"]
 readme = "README.md"
 authors = ["Luke I. Wilson <asmoaesl@gmail.com>", "Greg Chapple <gregchapple1@gmail.com>"]
+edition = "2018"
 
 [patch.crates-io]
 crossterm_input = { path = "crossterm_input" } # temporary, until #157 gets pulled for crossterm
