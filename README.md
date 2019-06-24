@@ -1,69 +1,49 @@
-# Iota [![Build Status](https://travis-ci.org/gchp/iota.svg?branch=master)](https://travis-ci.org/gchp/iota)
+# Credits
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gchp/iota?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Iota is a terminal-based text-editor written in Rust.
+Credits is a CLI text-editor for cross-platform edits. The focus of Credits is to offer a native
+command-line text editing software for all mainstream operating systems.
 
 Here's what it looks like right now, editing itself.
 
 ![Screenshot](screenshot.png)
 
-## Motivation
+Credits is a fork of the popular, but dead, Iota text editor written in pure Rust. This fork currently aims to do several things before fully changing courses:
 
-Iota was born out of my frustrations with existing text editors. Over the years I've tried
-combinations of simple text editors, IDEs and everything in between. None of them felt right
-to me, however. Some were too slow & bulky, others were too difficult to customise and still
-others were platform specific and I couldn't use them on all my machines.
+ - Replace rustbox (Unix-only) backend with crossterm (done)
+ - Bring codebase up to date with latest Rust (changing dependencies out) (wip)
+ - Refactor and aim to remove as much code as possible (slim the codebase down) (up next)
+ - Fix bugs from iota issues list (wip)
 
-I started building Iota with the view of combining ideas and features from serveral different
-editors while designing it to work on modern hardware.
-
-Why Rust? Because its fun and why not!
-
-## Goals
-
-The goals for Iota are that it would be:
-
-- 100% open source
-- highly extensible/customisable/scriptable
-- fast & efficient - designed with modern hardware in mind
-- cross platform - it should work anywhere
-- developer friendly - it should just "get out of the way"
-- Rust tooling integration (see note below)
-
-Iota is still in the very early stages, and is probably not ready for every day use.
-Right now the focus is on implementing and polishing the basic editing functionality.
-
-Windows support is coming, but it's somewhat slow right now. Help with this would
-be greatly appreciated!
-
-**Note on Rust integration:**
-_The aim is to support code editing in all languages (and of course plain text),
-with a lean towards Rust and integration with Rust tools. I don't intend it to
-be a "Rust IDE" or "Rust only", however I think it would be cool to experiment with
-integration with Rust tooling. This could also be applied to other languages too._
+### Course Change
+When this fork has finished the above, it will begin implementing the following:
+ - PEG AST-based syntax highlighting (using pest parser)
+ - A single, standard control scheme with support for loading custom, scriptable control schemes (getting rid of built-in Emacs and Vi controls)
 
 ## Building
+### To Install
+Clone (or download) the project and install it using cargo:
+```bash
+git clone https://github.com/asmoaesl/credits.git
+cd credits
+cargo install --path .
+```
+Now Credits is installed on your computer and available in your PATH.
 
-Clone the project and run `cargo build --release`.
-
-**NOTE:** Iota needs to be built using the nightly toolchain for now, not stable.<br>
+**NOTE:** Credits needs to be built using the nightly toolchain for now, not stable.<br>
 Run the following commands - `$ rustup install nightly` following which run - `$ rustup override set nightly `.<br>
 [Rustup](https://github.com/rust-lang-nursery/rustup.rs) is very useful for managing
 multiple rust versions.
 
-Once you have the source, run:
+### Usage
 
-## Usage
-
-To start the editor run `./target/release/iota /path/to/file.txt`. Or
-simply `./target/release/iota` to open an empty buffer.
+To start the editor run `./target/release/credits /path/to/file.txt`. Or
+simply `./target/release/credits` to open an empty buffer.
 
 You can also create buffers from `stdin`.
 
 ```bash
 # open a buffer with the output of `ifconfig`
-ifconfig | ./target/release/iota
+ifconfig | ./target/release/credits
 ```
 
 You can move the cursor around with the arrow keys.
@@ -75,7 +55,7 @@ The following keyboard bindings are also available:
 - `Ctrl-z` undo
 - `Ctrl-y` redo
 
-Iota currently supports both Vi and Emacs style keybindings for simple movement.
+Credits currently supports both Vi and Emacs style keybindings for simple movement.
 
 You can enable Vi style keybindings by using the `--vi` flag when starting Iota.
 The vi-style modes are in the early stages, and not all functionality is there
