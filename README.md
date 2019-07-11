@@ -16,7 +16,8 @@ Credits is a fork of the popular, but dead, Iota text editor written in pure Rus
 
 ### Course Change
 When this fork has finished the above, it will begin implementing the following:
- - PEG AST-based syntax highlighting (using pest parser)
+ - Custom, simple syntax highlighting language
+ - Simple theme making language based on the syntax highlighting language
  - A single, standard control scheme with support for loading custom, scriptable control schemes (getting rid of built-in Emacs and Vi controls)
 
 ## Building
